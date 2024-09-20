@@ -4,6 +4,6 @@
 ## ejemplo para practicar Markdown
 
 base de datos mysql y prueba de datos en postman.
-![img]([https://url-de-la-imagen.com](https://pbs.twimg.com/profile_images/1058829422239903744/srXIFfIn_400x400.jpg))
+![]([https://url-de-la-imagen.com](https://pbs.twimg.com/profile_images/1058829422239903744/srXIFfIn_400x400.jpg))
 
-[Enlace interesante](https://www.instagram.com/clubsantamarina/?hl=es)
+[instagram de Santamarina](https://www.instagram.com/clubsantamarina/?hl=es)
