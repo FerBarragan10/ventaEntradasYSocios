@@ -27,4 +27,12 @@ public class ventaEntradasDao {
         return entradas;
 
     }
+
+
+    public Entrada updateEntrada(Integer id, Entrada entrada) {
+        String sql = "UPDATE entradas SET tipoEntrada = ?, precio = ? WHERE id = ?";
+        jdbcTemplate.update(sql, entrada.getTipoEntrada(), entrada.getPrecio(), id);
+        return entrada;
+    }
+
 }
