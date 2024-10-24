@@ -16,7 +16,7 @@ public Entrada mapRow(ResultSet rs, int rowNum) throws SQLException {
         entrada.setId((rs.getInt("id")));
         entrada.setPrecio(String.valueOf(rs.getString("precio")));
         entrada.setTipoEntrada(String.valueOf(rs.getString("tipo")));
-        entrada.setSocio(rs.getBoolean("is_socio"));
+        entrada.setIsSocio(rs.getBoolean("is_socio"));
         return entrada;
 
         }

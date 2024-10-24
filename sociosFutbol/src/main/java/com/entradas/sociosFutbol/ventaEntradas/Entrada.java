@@ -21,4 +21,9 @@ public class Entrada {
 
 
 
+
+        public void setIsSocio(boolean b) {
+                isSocio = b; // Asegúrate de que este setter se utiliza correctamente
+
+        }
 }
