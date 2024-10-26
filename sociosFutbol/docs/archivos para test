@@ -1,0 +1,173 @@
+Para llevar a cabo los tests que mencionas, es importante estructurarlos adecuadamente utilizando un framework de pruebas como JUnit. Aquí te dejo un ejemplo de cómo podrías implementar cada uno de los requisitos que has enumerado, suponiendo que tienes una estructura básica de pruebas en un proyecto de Spring Boot.
+
+1. Comprobar que no pueden agregarse socios repetidos
+java
+Copiar código
+@Test
+void testAgregarSocioRepetido() {
+    Socio socio1 = new Socio("Juan", "Pérez", "juan.perez@example.com", "1234567890", "12345678");
+    socioService.agregarSocio(socio1);
+
+    Exception exception = assertThrows(SocioRepetidoException.class, () -> {
+        socioService.agregarSocio(socio1);
+    });
+
+    assertEquals("El socio ya está registrado", exception.getMessage());
+}
+2. Comprobar que no es posible agregar actividades repetidas
+java
+Copiar código
+@Test
+void testAgregarActividadRepetida() {
+    Actividad actividad1 = new Actividad("Fútbol", 10);
+    actividadService.agregarActividad(actividad1);
+
+    Exception exception = assertThrows(ActividadRepetidaException.class, () -> {
+        actividadService.agregarActividad(actividad1);
+    });
+
+    assertEquals("La actividad ya está registrada", exception.getMessage());
+}
+3. Comprobar que el encargado de una actividad es un socio de la nómina
+java
+Copiar código
+@Test
+void testEncargadoActividadEsSocio() {
+    Socio socio = new Socio("Ana", "Martínez", "ana.martinez@example.com", "4567890123", "22334455");
+    Actividad actividad = new Actividad("Baloncesto", 10);
+    actividad.setEncargado(socio);
+    socioService.agregarSocio(socio);
+
+    assertTrue(actividadService.isEncargadoValido(actividad));
+}
+4. Comprobar que el método toString() de Actividad devuelve una cadena con el formato adecuado
+java
+Copiar código
+@Test
+void testToStringActividad() {
+    Actividad actividad = new Actividad("Natación", 10);
+    actividad.setEncargado(new Socio("Carlos", "Rodríguez", "carlos@example.com", "7890123456", "55667788"));
+
+    assertEquals("Natación a cargo de Rodríguez", actividad.toString());
+}
+5. Comprobar que el método toString() devuelve una cadena con el formato adecuado para Socio
+java
+Copiar código
+@Test
+void testToStringSocio() {
+    Socio socio = new Socio("María", "Gómez", "maria.gomez@example.com", "2345678901", "87654321");
+
+    assertEquals("Gómez, María", socio.toString());
+}
+6. Generador de datos de Socios
+java
+Copiar código
+private Socio generarSocioAleatorio() {
+    String[] nombres = {"Juan", "María", "Pedro", "Ana", "Luis", "Laura", "Carlos", "Sofía"};
+    String[] apellidos = {"Pérez", "Gómez", "López", "Martínez", "Hernández", "García", "Rodríguez", "Sánchez"};
+
+    String nombre = nombres[(int) (Math.random() * nombres.length)];
+    String apellido = apellidos[(int) (Math.random() * apellidos.length)];
+    String email = nombre.toLowerCase() + "." + apellido.toLowerCase() + "@example.com";
+    String telefono = String.valueOf((int) (Math.random() * 1000000000));
+    String dni = String.valueOf((int) (Math.random() * 10000000));
+
+    return new Socio(nombre, apellido, email, telefono, dni);
+}
+7. Comprobar que al intentar inscribir más usuarios del cupo permitido se dispara la excepción CupoExcedidoException
+java
+Copiar código
+@Test
+void testCupoExcedido() {
+    Actividad actividad = new Actividad("Yoga", 1); // Cupo máximo 1
+    actividadService.agregarActividad(actividad);
+
+    Socio socio1 = generarSocioAleatorio();
+    Socio socio2 = generarSocioAleatorio();
+    actividadService.inscribirSocio(actividad, socio1);
+
+    Exception exception = assertThrows(CupoExcedidoException.class, () -> {
+        actividadService.inscribirSocio(actividad, socio2);
+    });
+
+    assertEquals("Cupo excedido para la actividad", exception.getMessage());
+}
+8. Comprobar que al intentar inscribir un socio con una edad no permitida se dispara la excepción EdadInsuficienteException
+java
+Copiar código
+@Test
+void testEdadInsuficiente() {
+    Socio socio = new Socio("Ana", "Martínez", "ana@example.com", "4567890123", "22334455");
+    socio.setEdad(15); // Supongamos que la edad mínima es 18
+    Actividad actividad = new Actividad("Fútbol", 10);
+    actividadService.agregarActividad(actividad);
+
+    Exception exception = assertThrows(EdadInsuficienteException.class, () -> {
+        actividadService.inscribirSocio(actividad, socio);
+    });
+
+    assertEquals("Edad insuficiente para inscribirse en la actividad", exception.getMessage());
+}
+9. Generar un test dinámico que permita comprobar que todos los inscritos en una actividad cumplen con la edad mínima
+java
+Copiar código
+@TestFactory
+Stream<DynamicTest> testInscritosCumplenEdadMinima() {
+    Actividad actividad = new Actividad("Tenis", 10);
+    actividadService.agregarActividad(actividad);
+
+    List<Socio> socios = List.of(
+        new Socio("Juan", "Pérez", "juan@example.com", "1234567890", "12345678"),
+        new Socio("María", "Gómez", "maria@example.com", "2345678901", "87654321")
+    );
+
+    // Inscribir todos los socios
+    socios.forEach(socio -> actividadService.inscribirSocio(actividad, socio));
+
+    return socios.stream()
+        .map(socio -> DynamicTest.dynamicTest("Comprobar edad mínima para " + socio.getNombre(), () -> {
+            assertTrue(socio.getEdad() >= 18, "El socio no cumple con la edad mínima");
+        }));
+}
+10. Generar un test dinámico que permita comprobar que ninguna actividad excede su cupo máximo
+java
+Copiar código
+@TestFactory
+Stream<DynamicTest> testActividadesNoExcedenCupoMaximo() {
+    List<Actividad> actividades = List.of(
+        new Actividad("Fútbol", 2),
+        new Actividad("Baloncesto", 5)
+    );
+
+    return actividades.stream()
+        .map(actividad -> DynamicTest.dynamicTest("Comprobar que la actividad " + actividad.getNombre() + " no excede su cupo máximo", () -> {
+            assertTrue(actividad.getCupoMaximo() > 0, "El cupo de la actividad debe ser mayor que 0");
+        }));
+}
+11. Generar un script de prueba que permita parametrizar la cantidad de elementos Socios generados aleatoriamente
+java
+Copiar código
+private List<Socio> generarSocios(int cantidad) {
+    List<Socio> socios = new ArrayList<>();
+    for (int i = 0; i < cantidad; i++) {
+        socios.add(generarSocioAleatorio());
+    }
+    return socios;
+}
+12. Generar un script de prueba que permita parametrizar la cantidad de Socios generados para inscribir a una actividad totalmente aleatoria
+java
+Copiar código
+private void inscribirSociosAleatorios(Actividad actividad, int cantidad) {
+    List<Socio> socios = generarSocios(cantidad);
+    for (Socio socio : socios) {
+        actividadService.inscribirSocio(actividad, socio);
+    }
+}
+Consideraciones Finales
+Manejo de excepciones: Asegúrate de que las excepciones personalizadas (SocioRepetidoException, ActividadRepetidaException, CupoExcedidoException, EdadInsuficienteException) estén correctamente implementadas.
+
+Parámetros: Puedes usar un framework como JUnitParams o JUnit5 para permitir pasar parámetros a los tests.
+
+Modularización: Es buena práctica modularizar los tests en diferentes clases según la lógica de negocio (por ejemplo, SocioServiceTest, ActividadServiceTest, etc.).
+
+Ejecución de Tests: Puedes ejecutar estos tests mediante el entorno de pruebas de tu IDE (como IntelliJ o Eclipse) o mediante un sistema de construcción como Maven o Gradle.
