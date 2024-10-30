@@ -15,6 +15,12 @@ public class ventaEntradasService {
     }
 
 
+    public List<Entrada> getEntradas()throws Exception {
+        List<Entrada> entrada=null;
+        entrada=ventaEntradasDao.getAllEntradas();
+        return entrada;
+    }
+
 
     public Entrada updateEntrada(Integer id, Entrada entrada) throws Exception {
         // Aquí podrías agregar validaciones antes de llamar al DAO
